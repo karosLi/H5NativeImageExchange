@@ -55,27 +55,30 @@
 #### 跨域
 由于大部分的链接都是支持 Https，如果本地服务器是 Http 会产生 跨域问题。那怎么让本地服务器支持 Https 呢，此时就需要使用自签名证书和代码上需要集成支持自签名证书。
 
-### 自签名证书会过期
+#### 自签名证书会过期
 自签名会有过期的问题，怎么好动态更新证书。我们可以在创建自签名证书时设置有效期为 10 年，那这样就可以不用考虑动态更新了。
 
-### 计算上传文件 MD5
+#### 自签名证书信任问题
+通过 NSURLProtocol/WebViewClient 拦截请求，在校验证书合法性时，始终信任自签名证书可以解决这个问题。
+
+#### 计算上传文件 MD5
 可以使用 spark-md5 在 H5 侧计算上传图片的 MD5 值。
 
-### 本地图片删除策略
+#### 本地图片删除策略
 什么时候去清掉不用的图片呢，不然本地目录会越来越大的。通过设定最大缓存大小是 100M，最大保留时间是 7天来解决此问题，触发的时机可以在 App 启动 60s 后在子线程来做一次清理。
 
-### 动态端口
+#### 动态端口
 由于本地服务器的端口只有 Native 知道，而 H5 是不知道的，那怎么把端口号告诉 H5 呢，如果通过 JSBridge 告诉 H5 就比较繁琐了。有没有可能直接把 https://resource/uploadFile 映射到 https://localhost:60000/uploadFile 呢？
 
 是有可能的，可以通过 NSURLProtocol/WebViewClient 针对 AJAX POST 请求进行拦截，并把 https://resource/uploadFile 重定向到 https://localhost:60000/uploadFile 上，这样就可以完美的 屏蔽动态端口对 H5 的影响。
 
-### App 怎么更好的访问本地图片
+#### App 怎么更好的访问本地图片
 App 是否支持这样的链接呢？
 https://resource/76a9ca44b0af8b4d5fa238e5f19f5a4f
 
-也是可以的，同样是通过 SURLProtocol/WebViewClient 针对 Get 请求进行拦截，把 https://resource/76a9ca44b0af8b4d5fa238e5f19f5a4f 重定向到 https://localhost:60000/76a9ca44b0af8b4d5fa238e5f19f5a4f 上即可。
+也是可以的，同样是通过 NSURLProtocol/WebViewClient 针对 Get 请求进行拦截，把 https://resource/76a9ca44b0af8b4d5fa238e5f19f5a4f 重定向到 https://localhost:60000/76a9ca44b0af8b4d5fa238e5f19f5a4f 上即可。
 
-### 本地服务会占用资源
+#### 本地服务会占用资源
 这种方式都是比较成熟的，可以使用轻量级的 Web Server 框架。
 
 另外可以监听前台和后台通知，在后台时停止服务，前台时恢复服务，这样可以避免占用资源导致在后台时被系统杀掉。
