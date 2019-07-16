@@ -26,7 +26,61 @@
     
 这段日志，说明微信在本地也是开启了一个本地web服务，来进行 H5 和 Native 的图片交换。
 
-所以我们也决定使用 Local Web Server。
+## 数据性能统计
+
+```
+总耗时
+ 
+ <!-- 3.5M http://apk.leoao.com/4b3743a85db31d18159b357de0e3c5b2f2f5b268.jpg -->
+ <!-- 2.5M http://apk.leoao.com/5a699c89baaea.jpg -->
+ <!-- 1.5M http://apk.leoao.com/1ZF9110359-1.jpg -->
+ <!-- 540k http://apk.leoao.com/1ZF9110359-1%20%281%29.jpg -->
+ <!-- 200k http://apk.leoao.com/4@3x.png -->
+ 
+ 七牛CDN上传：
+    3.5M 1.82s
+    2.5M 1.34s
+    1.5M 768ms
+    540k 248ms
+    200k 130ms
+ 
+ 七牛CDN下载：
+    3.5M 1.59s
+    2.5M 1.12s
+    1.5M 800ms
+    540k 253ms
+    200k 120ms
+ 
+ local web server 方案(从H5传图片给Native,再到从Native回到H5):
+    3.5M 280ms
+    2.5M 252ms
+    1.5M 108ms
+    540k 67ms
+    200k 44ms
+ 
+ iOS UIWebView base64 方案(从H5传图片给Native,再到从Native回到H5):
+    3.5M 2.1s
+    2.5M 613ms
+    1.5M 400ms
+    540k 220ms
+    200k 50ms
+ 
+ iOS WKWebView base64 方案(从H5传图片给Native,再到从Native回到H5):
+    3.5M 1.1s
+    2.5M 320ms
+    1.5M 400ms
+    540k 220ms
+    200k 39ms
+ 
+Android base64 方案(从H5传图片给Native,再到从Native回到H5):
+    3.5M 6s
+    2.5M 1.7s
+    1.5M 2.1s
+    540k 1.2s
+    200k 180ms
+```
+
+从上面的数据可以看出，base64是性能比较差的，特别是在 Android 机型上。CDN 也会有上传和下载的过程，过大的图片，也会导致更长的上传的和下载时间，而且也需要依赖于网络稳定性。基于这些因素我们决定使用 Local Web Server 方案来做图片交换。
 
 ## Local Web Server
 
